@@ -7,6 +7,7 @@ window.addEventListener('DOMContentLoaded', function() {
     let UserStep = Number(InputKey.value);
     let output = document.getElementById('output');
     let Encrypt = document.getElementById('encrypt-btn');
+    let Decrypt = document.getElementById('decrypt-btn');
     let Reset = document.getElementById('reset-btn');
     let TextToWork;
     let pos;
@@ -24,8 +25,8 @@ window.addEventListener('DOMContentLoaded', function() {
     let EngAlfLower = ['a','b','c','d','e','f','g','h','i','j','k','l','m','m','o','p','q','r','s','t','u','v','w','x','y','z'];
     let EngAlfLowerEncrypt = Array(26);
     
-    initEncrypt(); //Инициализация шифра
-    
+    initEncrypt(); //Сдвиг первоначального массива
+    //функция сдвига первоначального массива на ключ, введенный пользователем
     function initEncrypt() {
       NumbersEncrypt = CaezarEncrypt(UserStep, Numbers);
       RusAlfUpEncrypt = CaezarEncrypt(UserStep, RusAlfUp);
@@ -34,15 +35,19 @@ window.addEventListener('DOMContentLoaded', function() {
       EngAlfLowerEncrypt = CaezarEncrypt(UserStep, EngAlfLower);
     }
 
-    //При изменении ключа вызывается снова
+    //При изменении ключа сдвиг вызывается снова
     InputKey.addEventListener('change', function() { 
       UserStep = Number(this.value);
       initEncrypt();
     });
     
     function CaezarEncrypt(step, arr) {
-      let CopyAlf=arr.slice(step).concat(arr.slice(0,step)); //делает копию части массива и сдвигаем массив
-      return CopyAlf; //возвращает массив с зашифрованными символами
+      if (step>arr.length) {
+        step=step%arr.length;
+      }
+      let CopyAlf=arr.slice(step).concat(arr.slice(0,step)); //делает копию сдвинутого массива
+      console.log(CopyAlf);
+      return CopyAlf; 
     }
     //проверка, содержится ли символ 
     function contains(symb, arr) {
@@ -64,7 +69,7 @@ window.addEventListener('DOMContentLoaded', function() {
           output += symbol;
         }
         if (contains(symbol, Numbers)) {
-          symbol = NumbersEncrypt[pos];
+          // symbol = NumbersEncrypt[pos]; Сдвиг цифр
           output += symbol;
         }
         if (contains(symbol, RusAlfUp)) {
@@ -86,13 +91,47 @@ window.addEventListener('DOMContentLoaded', function() {
       }
       return output;
     }
-  
+    //дешифрация
+    function decrypt(text) {
+      let output = '';
+      for (let i = 0; i <= text.length; i++) {
+        let symbol = text[i];
+        if (contains(symbol, Symbols)) {
+          output += symbol;
+        }
+        if (contains(symbol, NumbersEncrypt)) {
+          // symbol = Numbers[pos]; //сдвиг цифр
+          output += symbol;
+        }
+        if (contains(symbol, RusAlfUpEncrypt)) {
+            symbol = RusAlfUp[pos];
+            output += symbol;
+        }
+        if ((contains(symbol, RusAlfLowerEncrypt))) {
+            symbol = RusAlfLower[pos];
+            output += symbol;
+        }
+        if (contains(symbol, EngAlfUpEncrypt)) {
+            symbol = EngAlfUp[pos];
+            output += symbol;
+        }
+        if ((contains(symbol, EngAlfLowerEncrypt))) {
+            symbol = EngAlfLower[pos];
+            output += symbol;
+        }
+      }
+      return output;
+    }
     //вывод зашифрованного текста
     Encrypt.addEventListener('click', function() {
       TextToWork = InputText.value;
       output.value = encrypt(TextToWork);
     });
-
+    //вывод дешифрованного текста
+    Decrypt.addEventListener('click', function() {
+      TextToWork = InputText.value;
+      output.value = decrypt(TextToWork);
+    });
     //Сброс текста
     Reset.addEventListener('click', function() {
       InputText.value = '';
